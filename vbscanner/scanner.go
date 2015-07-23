@@ -166,6 +166,13 @@ func (s *Scanner) Scan() (TokenType, string) {
 								panic(err)
 							}
 							return Comment, s.scanComment()
+						} else if str == "em" && b[2] != '_' && !unicode.IsLetter(rune(b[2])) && !unicode.IsDigit(rune(b[2])) {
+							b := make([]byte, 2)
+							_, err = s.rdr.Read(b)
+							if err != nil {
+								panic(err)
+							}
+							return Comment, s.scanComment()
 						}
 					}
 				}

@@ -42,6 +42,7 @@ dt4 = #31-Dec-1999#
 dt5 = #21:26:38#
 
 sub foo(x)
-
+	x = 10 REM ok
+	x = 20 REM! ok
 end sub
 %>
