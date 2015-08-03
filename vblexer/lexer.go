@@ -82,7 +82,7 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 		case "null", "empty", "nothing":
 			return KEYWORD, stoken, value
 		case "true", "false":
-			b, err := strconv.ParseBool(value)
+			b, err := strconv.ParseBool(stoken)
 			if err != nil {
 				panic(err)
 			}
