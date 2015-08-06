@@ -40,6 +40,7 @@ const (
 	CHAR                                 // random characters like parens
 	EOL                                  // end of line
 	OP                                   // operator
+	CONTINUATION                         // continuation character (underscore)
 )
 
 // Lex uses a scanner to read and classify VBScript tokens
@@ -71,16 +72,16 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 		stoken := strings.ToLower(value)
 		switch stoken {
 		// statements
-		case "call", "class", "const", "dim", "do", "loop", "erase", "execute", "executeglobal", "exit", "for", "each", "next", "function", "if", "then", "else", "elseif", "on", "error", "resume", "goto", "option", "explicit", "private", "public", "property", "let", "get", "set", "redim", "randomize", "rem", "select", "case", "stop", "sub", "while", "wend", "with", "end", "raise":
-			return STATEMENT, stoken, value
+		case "call", "class", "const", "dim", "do", "loop", "erase", "execute", "executeglobal", "exit", "for", "each", "next", "function", "if", "then", "else", "elseif", "on", "error", "resume", "goto", "option", "explicit", "private", "public", "property", "let", "get", "set", "redim", "randomize", "rem", "select", "case", "stop", "sub", "while", "wend", "with", "end", "raise", "new":
+			return STATEMENT, strings.Title(stoken), value
 
 		// functions
-		case "abs", "array", "asc", "atn", "cbool", "cbyte", "ccur", "cdate", "cdbl", "chr", "cint", "clng", "conversions", "cos", "createobject", "csng", "cstr", "date", "dateadd", "datediff", "datepart", "dateserial", "datevalue", "day", "escape", "eval", "exp", "filter", "formatcurrency", "formatdatetime", "formatnumber", "formatpercent", "getlocale", "getobject", "getref", "hex", "hour", "inputbox", "instr", "instrrev", "int, fix", "isarray", "isdate", "isempty", "isnull", "isnumeric", "isobject", "join", "lbound", "lcase", "left", "len", "loadpicture", "log", "ltrim; rtrim; and trim", "maths", "mid", "minute", "month", "monthname", "msgbox", "now", "oct", "replace", "rgb", "right", "rnd", "round", "scriptengine", "scriptenginebuildversion", "scriptenginemajorversion", "scriptengineminorversion", "second", "setlocale", "sgn", "sin", "space", "split", "sqr", "strcomp", "string", "strreverse", "tan", "time", "timer", "timeserial", "timevalue", "typename", "ubound", "ucase", "unescape", "vartype", "weekday", "weekdayname", "year":
-			return FUNCTION, stoken, value
+		case "abs", "array", "asc", "atn", "cbool", "cbyte", "ccur", "cdate", "cdbl", "chr", "cint", "clng", "conversions", "cos", "createobject", "csng", "cstr", "date", "dateadd", "datediff", "datepart", "dateserial", "datevalue", "day", "escape", "eval", "exp", "filter", "formatcurrency", "formatdatetime", "formatnumber", "formatpercent", "getlocale", "getobject", "getref", "hex", "hour", "inputbox", "instr", "instrrev", "int", "fix", "isarray", "isdate", "isempty", "isnull", "isnumeric", "isobject", "join", "lbound", "lcase", "left", "len", "loadpicture", "log", "ltrim", "rtrim", "trim", "maths", "mid", "minute", "month", "monthname", "msgbox", "now", "oct", "replace", "rgb", "right", "rnd", "round", "scriptengine", "scriptenginebuildversion", "scriptenginemajorversion", "scriptengineminorversion", "second", "setlocale", "sgn", "sin", "space", "split", "sqr", "strcomp", "string", "strreverse", "tan", "time", "timer", "timeserial", "timevalue", "typename", "ubound", "ucase", "unescape", "vartype", "weekday", "weekdayname", "year":
+			return FUNCTION, formatFunction(stoken), value
 
 		// Keywords
 		case "null", "empty", "nothing":
-			return KEYWORD, stoken, value
+			return KEYWORD, strings.Title(stoken), value
 		case "true", "false":
 			b, err := strconv.ParseBool(stoken)
 			if err != nil {
@@ -90,23 +91,23 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 
 		// constants
 		case "vbblack", "vbred", "vbgreen", "vbyellow", "vbblue", "vbmagenta", "vbcyan", "vbwhite":
-			return COLOR_CONSTANT, stoken, value
+			return COLOR_CONSTANT, formatConstant(stoken), value
 		case "vbbinarycompare", "vbtextcompare":
-			return COMPARE_CONSTANT, stoken, value
+			return COMPARE_CONSTANT, formatConstant(stoken), value
 		case "vbsunday", "vbmonday", "vbtuesday", "vbwednesday", "vbthursday", "vbfriday", "vbsaturday", "vbusesystemdayofweek", "vbfirstjan1", "vbfirstfourdays", "vbfirstfullweek":
-			return DATE_CONSTANT, stoken, value
+			return DATE_CONSTANT, formatConstant(stoken), value
 		case "vbgeneraldate", "vblongdate", "vbshortdate", "vblongtime", "vbshorttime":
-			return DATEFORMAT_CONSTANT, stoken, value
+			return DATEFORMAT_CONSTANT, formatConstant(stoken), value
 		case "vbobjecterror":
-			return MISC_CONSTANT, stoken, value
-		case "vbokonly", "vbokcancel", "vbabortretryignore", "vbyesnocancel", "vbyesno", "vbretrycancel", "vbcritical", "vbquestion", "vbexclamation", "vbinformation", "vbdefaultbutton1", "vbdefaultbutton2", "vbdefaultbutton3", "vbdefaultbutton4", "vbapplicationmodal", "vbsystemmodal", "vbok", "vbancel", "vbabort", "vbretry", "vbignore", "vbyes", "vbno":
-			return MSGBOX_CONSTANT, stoken, value
+			return MISC_CONSTANT, formatConstant(stoken), value
+		case "vbokonly", "vbokcancel", "vbabortretryignore", "vbyesnocancel", "vbyesno", "vbretrycancel", "vbcritical", "vbquestion", "vbexclamation", "vbinformation", "vbdefaultbutton1", "vbdefaultbutton2", "vbdefaultbutton3", "vbdefaultbutton4", "vbapplicationmodal", "vbsystemmodal", "vbok", "vbcancel", "vbabort", "vbretry", "vbignore", "vbyes", "vbno":
+			return MSGBOX_CONSTANT, formatConstant(stoken), value
 		case "vbcr", "vbcrlf", "vbformfeed", "vblf", "vbnewline", "vbnullchar", "vbnullstring", "vbtab", "vbverticaltab":
-			return STRING_CONSTANT, stoken, value
+			return STRING_CONSTANT, formatConstant(stoken), value
 		case "vbusedefault", "vbtrue", "vbfalse":
-			return TRISTATE_CONSTANT, stoken, value
+			return TRISTATE_CONSTANT, formatConstant(stoken), value
 		case "vbempty", "vbnull", "vbinteger", "vblong", "vbsingle", "vbdouble", "vbcurrency", "vbdate", "vbstring", "vbobject", "vberror", "vbboolean", "vbvariant", "vbdataobject", "vbdecimal", "vbbyte", "vbarray":
-			return VARTYPE_CONSTANT, stoken, value
+			return VARTYPE_CONSTANT, formatConstant(stoken), value
 		default:
 			return IDENTIFIER, value, value
 		}
@@ -162,12 +163,16 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 	case vbscanner.Html:
 		return HTML, value, value
 	case vbscanner.Char:
-		return CHAR, value, value
+		if value == "_" {
+			return CONTINUATION, value, value
+		} else {
+			return CHAR, value, value
+		}
 	case vbscanner.EOL:
 		lex.Line++
 		return EOL, value, value
 	case vbscanner.Op:
-		return OP, value, value
+		return OP, strings.Title(value), value
 	}
 
 	panic("How did we get here?")

@@ -16,7 +16,8 @@ dim s : s = "hello " & _
    "there " & _
    "you " & _
    "coder " & _
-   "person"
+   "person" & a_
+
 REM ok this is fun
 x = &h32F
 x1 = &o777
