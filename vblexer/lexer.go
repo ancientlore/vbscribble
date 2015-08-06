@@ -72,7 +72,7 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 		stoken := strings.ToLower(value)
 		switch stoken {
 		// statements
-		case "call", "class", "const", "dim", "do", "loop", "erase", "execute", "executeglobal", "exit", "for", "each", "next", "function", "if", "then", "else", "elseif", "on", "error", "resume", "goto", "option", "explicit", "private", "public", "property", "let", "get", "set", "redim", "randomize", "rem", "select", "case", "stop", "sub", "while", "wend", "with", "end", "raise", "new":
+		case "call", "class", "const", "dim", "do", "loop", "erase", "execute", "executeglobal", "exit", "for", "each", "next", "function", "if", "then", "else", "elseif", "on", "error", "resume", "goto", "option", "explicit", "private", "public", "property", "let", "get", "set", "redim", "randomize", "rem", "select", "case", "stop", "sub", "while", "wend", "with", "end", "raise", "new", "to", "step", "byref", "byval", "is", "in":
 			return STATEMENT, strings.Title(stoken), value
 
 		// functions
