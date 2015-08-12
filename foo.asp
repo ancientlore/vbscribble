@@ -14,7 +14,7 @@ dim x_y_z_
 
 dim s : s = "hello " & _
    "there " & _
-   "you " & _
+   "you " &_
    "coder " & _
    "person" & a_
 
