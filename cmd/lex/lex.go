@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ancientlore/vbscribble/vblexer"
-	"github.com/ancientlore/vbscribble/vbscanner"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/ancientlore/vbscribble/vblexer"
+	"github.com/ancientlore/vbscribble/vbscanner"
 )
 
 func main() {

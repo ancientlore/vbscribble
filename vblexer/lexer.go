@@ -2,11 +2,12 @@
 package vblexer
 
 import (
-	"github.com/ancientlore/vbscribble/vbscanner"
 	"io"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ancientlore/vbscribble/vbscanner"
 )
 
 //go:generate stringer -type=TokenType
@@ -165,9 +166,8 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 	case vbscanner.Char:
 		if value == "_" {
 			return CONTINUATION, value, value
-		} else {
-			return CHAR, value, value
 		}
+		return CHAR, value, value
 	case vbscanner.EOL:
 		lex.Line++
 		return EOL, value, value

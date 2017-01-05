@@ -133,6 +133,7 @@ func (s *Scanner) scanCode() string {
 	}
 }
 
+// Scan returns the next token type and its value.
 func (s *Scanner) Scan() (TokenType, string) {
 	if s.eof {
 		return EOF, ""
@@ -273,7 +274,7 @@ func (s *Scanner) scanString() string {
 
 		if r != '"' {
 			if r == '\r' || r == '\n' {
-				panic("unterminated string constant")
+				panic("unterminated string literal")
 			}
 			s.buf.WriteRune(r)
 		} else {
@@ -305,7 +306,7 @@ func (s *Scanner) scanDate() string {
 		if r != '#' {
 			const allowed = "/-: \tAPMJANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDECapmjanfebmaraprmayjunjulaugsepoctnovdec"
 			if r == '\r' || r == '\n' {
-				panic("unterminated Date constant")
+				panic("unterminated Date literal")
 			} else if unicode.IsDigit(r) || strings.ContainsRune(allowed, r) {
 				s.buf.WriteRune(r)
 			} else {
@@ -380,7 +381,7 @@ func (s *Scanner) scanNumber(c rune) (TokenType, string) {
 	}
 }
 
-// scanCommebt returns the comment
+// scanComment returns the comment
 func (s *Scanner) scanComment() string {
 	s.buf.Reset()
 	for {
