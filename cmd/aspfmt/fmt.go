@@ -69,13 +69,15 @@ func main() {
 										t = "End " + t.(string)
 										v = pv + " " + v
 										tabs--
-										if t == "End Select" {
-											tabs--
-										}
+										/*
+											if t == "End Select" {
+												tabs--
+											}
+										*/
 									}
 								}
 								switch t {
-								case "Else", "ElseIf", "Case", "Wend":
+								case "Else", "ElseIf", "Case", "Wend", "Next", "Loop":
 									tabs--
 								}
 							}
@@ -110,7 +112,7 @@ func main() {
 							fmt.Print(aft)
 							fmt.Print(t)
 							switch t {
-							case "If", "Function", "Sub", "Class", "Select", "Property":
+							case "If", "Function", "Sub", "Class", "Property": // "Select"
 								if !(prevK == vblexer.STATEMENT && prevT == "Exit") {
 									tabs++
 								}
@@ -118,7 +120,7 @@ func main() {
 								if !(prevK == vblexer.STATEMENT && prevT == "Case") {
 									tabs++
 								}
-							case "ElseIf", "Case", "Do", "While":
+							case "ElseIf", "Case", "While", "For": // "Do"
 								tabs++
 							}
 						case vblexer.FUNCTION:
