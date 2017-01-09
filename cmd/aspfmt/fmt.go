@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ancientlore/vbscribble/vblexer"
 	"github.com/ancientlore/vbscribble/vbscanner"
@@ -26,7 +27,7 @@ func main() {
 				log.Fatal(err)
 			}
 			if !fi.IsDir() {
-				fmt.Println("\n*** ", f, " ***")
+				fmt.Fprintln(os.Stderr, "\n*** ", f, " ***")
 				fil, err := os.Open(f)
 				if err != nil {
 					log.Fatal(err)
@@ -40,13 +41,134 @@ func main() {
 					}()
 					lex.Init(fil, f, vbscanner.HTML_MODE)
 					aft := ""
-					for k, t, _ := lex.Lex(); k != vblexer.EOF; k, t, _ = lex.Lex() {
-						fmt.Printf("%s%v", aft, t)
-						if k == vblexer.EOL {
+					tabs := 0
+					startLine := true
+					paren := false
+					prevK := vblexer.EOF
+					var prevT interface{}
+					needStarter := false
+					for k, t, v := lex.Lex(); k != vblexer.EOF; k, t, v = lex.Lex() {
+						if needStarter {
+							fmt.Print("<%")
+							needStarter = false
+						}
+						if startLine {
+							if k == vblexer.STATEMENT {
+								if t == "End" {
+									pv := v
+									k, t, v = lex.Lex()
+									if k != vblexer.EOF {
+										t = "End " + t.(string)
+										v = pv + " " + v
+										tabs--
+										if t == "End Select" {
+											tabs--
+										}
+									}
+								}
+								switch t {
+								case "Else", "ElseIf", "Case", "Wend":
+									tabs--
+								}
+							}
+							if tabs < 0 {
+								tabs = 0
+							}
+							if prevK != vblexer.HTML {
+								fmt.Print(strings.Repeat("\t", tabs))
+							}
+							startLine = false
 							aft = ""
+							paren = false
 						} else {
 							aft = " "
 						}
+						if paren {
+							paren = false
+							aft = ""
+						}
+						if prevK == vblexer.STATEMENT && prevT == "Then" {
+							if k != vblexer.EOL && k != vblexer.HTML {
+								tabs--
+							}
+						}
+						switch k {
+						case vblexer.EOF:
+						case vblexer.STATEMENT:
+							fmt.Print(aft)
+							fmt.Print(t)
+							switch t {
+							case "If", "Function", "Sub", "Class", "Select", "Property":
+								if !(prevK == vblexer.STATEMENT && prevT == "Exit") {
+									tabs++
+								}
+							case "Else":
+								if !(prevK == vblexer.STATEMENT && prevT == "Case") {
+									tabs++
+								}
+							case "ElseIf", "Case", "Do", "While":
+								tabs++
+							}
+						case vblexer.FUNCTION:
+							fmt.Print(aft)
+							fmt.Print(t)
+						case vblexer.KEYWORD, vblexer.KEYWORD_BOOL:
+							fmt.Print(aft)
+							fmt.Print(t)
+						case vblexer.COLOR_CONSTANT, vblexer.COMPARE_CONSTANT, vblexer.DATE_CONSTANT, vblexer.DATEFORMAT_CONSTANT, vblexer.MISC_CONSTANT, vblexer.MSGBOX_CONSTANT, vblexer.STRING_CONSTANT, vblexer.TRISTATE_CONSTANT, vblexer.VARTYPE_CONSTANT:
+							fmt.Print(aft)
+							fmt.Print(t)
+						case vblexer.IDENTIFIER:
+							fmt.Print(aft)
+							fmt.Print(t)
+						case vblexer.STRING:
+							fmt.Print(aft)
+							fmt.Printf("%q", t)
+						case vblexer.INT:
+							fmt.Print(aft)
+							fmt.Print(v)
+						case vblexer.FLOAT:
+							fmt.Print(aft)
+							fmt.Print(v)
+						case vblexer.DATE:
+							fmt.Print(aft)
+							fmt.Print("#", v, "#")
+						case vblexer.COMMENT:
+							fmt.Print(aft)
+							fmt.Printf("' %s", t)
+						case vblexer.HTML:
+							if prevK != vblexer.EOF {
+								fmt.Print(aft)
+								fmt.Print("%>")
+							}
+							fmt.Print(v)
+							needStarter = true
+							startLine = true
+						case vblexer.CHAR:
+							fmt.Print(t)
+							if t == "(" {
+								paren = true
+							}
+						case vblexer.EOL:
+							if t == ":" {
+								fmt.Print(aft)
+								fmt.Print(t)
+								fmt.Print(" ")
+							} else {
+								fmt.Println()
+							}
+							startLine = true
+						case vblexer.OP:
+							fmt.Print(aft)
+							fmt.Print(t)
+						case vblexer.CONTINUATION:
+							fmt.Print(aft)
+							fmt.Print(t)
+						default:
+							panic("Unexpected token type")
+						}
+						prevK = k
+						prevT = t
 					}
 				}(fil, f)
 				fil.Close()
