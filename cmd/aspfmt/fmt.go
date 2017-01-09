@@ -123,7 +123,7 @@ func main() {
 							fmt.Print(t)
 						case vblexer.STRING:
 							fmt.Print(aft)
-							fmt.Printf("%q", t)
+							fmt.Printf("\"%s\"", strings.Replace(v, "\"", "\"\"", -1))
 						case vblexer.INT:
 							fmt.Print(aft)
 							fmt.Print(v)
