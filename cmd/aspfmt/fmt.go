@@ -120,7 +120,7 @@ func main() {
 								if !(prevK == vblexer.STATEMENT && prevT == "Case") {
 									tabs++
 								}
-							case "ElseIf", "Case", "While", "For": // "Do"
+							case "ElseIf", "Case", "While", "For", "With": // "Do"
 								tabs++
 							}
 						case vblexer.FUNCTION:
