@@ -13,6 +13,10 @@ import (
 	"github.com/ancientlore/vbscribble/vbscanner"
 )
 
+var (
+	respWrite = flag.Bool("rw", false, "Use Response.Write formatting")
+)
+
 func main() {
 	flag.Parse()
 
@@ -47,6 +51,9 @@ func main() {
 					prevK := vblexer.EOF
 					var prevT interface{}
 					needStarter := false
+					if *respWrite {
+						fmt.Print("<%")
+					}
 					for k, t, v := lex.Lex(); k != vblexer.EOF; k, t, v = lex.Lex() {
 						if needStarter {
 							fmt.Print("<%")
@@ -137,12 +144,27 @@ func main() {
 							fmt.Print(aft)
 							fmt.Printf("' %s", t)
 						case vblexer.HTML:
-							if prevK != vblexer.EOF {
-								fmt.Print(aft)
-								fmt.Print("%>")
+							if *respWrite {
+								lines := strings.Split(strings.Replace(v, "\r", "", -1), "\n")
+								for index, line := range lines {
+									if index == 0 {
+										fmt.Println()
+										fmt.Print(aft)
+										fmt.Print("Response.Write ")
+									} else {
+										fmt.Print(strings.Repeat("\t", tabs+1))
+										fmt.Print("& vbCrLf & ")
+									}
+									fmt.Printf("\"%s\"\n", strings.Replace(line, "\"", "\"\"", -1))
+								}
+							} else {
+								if prevK != vblexer.EOF {
+									fmt.Print(aft)
+									fmt.Print("%>")
+								}
+								fmt.Print(v)
+								needStarter = true
 							}
-							fmt.Print(v)
-							needStarter = true
 							startLine = true
 						case vblexer.CHAR:
 							fmt.Print(t)
@@ -169,6 +191,9 @@ func main() {
 						}
 						prevK = k
 						prevT = t
+					}
+					if *respWrite {
+						fmt.Println("%>")
 					}
 				}(fil, f)
 				fil.Close()
