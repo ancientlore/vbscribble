@@ -174,6 +174,9 @@ func main() {
 							}
 							startLine = true
 						case vblexer.CHAR:
+							if prevK == vblexer.STATEMENT {
+								fmt.Print(aft)
+							}
 							fmt.Print(t)
 							if t == "(" {
 								paren = true
