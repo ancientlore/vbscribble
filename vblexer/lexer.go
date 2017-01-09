@@ -162,6 +162,7 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 	case vbscanner.Comment:
 		return COMMENT, value, value
 	case vbscanner.Html:
+		lex.Line += strings.Count(value, "\n")
 		return HTML, value, value
 	case vbscanner.Char:
 		if value == "_" {
@@ -169,7 +170,9 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 		}
 		return CHAR, value, value
 	case vbscanner.EOL:
-		lex.Line++
+		if value != ":" {
+			lex.Line++
+		}
 		return EOL, value, value
 	case vbscanner.Op:
 		return OP, strings.Title(value), value

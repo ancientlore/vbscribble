@@ -40,7 +40,7 @@ func main() {
 					}()
 					lex.Init(fil, f, vbscanner.HTML_MODE)
 					for k, t, v := lex.Lex(); k != vblexer.EOF; k, t, v = lex.Lex() {
-						fmt.Printf("%-10s %v %#v\n", k, t, v)
+						fmt.Printf("%8d %-10s %v %#v\n", lex.Line, k, t, v)
 					}
 				}(fil, f)
 				fil.Close()

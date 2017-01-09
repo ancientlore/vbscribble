@@ -4,6 +4,7 @@ option explicit
 dim set_var : set_var = trUE
 %>
 <!--#include file="../inc/some_include.asp"-->
+<html>
 <%
 
 dim cc : cc = "42"
