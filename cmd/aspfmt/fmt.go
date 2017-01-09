@@ -51,6 +51,7 @@ func main() {
 					prevK := vblexer.EOF
 					var prevT interface{}
 					needStarter := false
+					remTabAfterEOL := false
 					if *respWrite {
 						fmt.Print("<%")
 					}
@@ -83,6 +84,10 @@ func main() {
 							}
 							if prevK != vblexer.HTML {
 								fmt.Print(strings.Repeat("\t", tabs))
+							}
+							if remTabAfterEOL {
+								remTabAfterEOL = false
+								tabs--
 							}
 							startLine = false
 							aft = ""
@@ -186,6 +191,8 @@ func main() {
 						case vblexer.CONTINUATION:
 							fmt.Print(aft)
 							fmt.Print(t)
+							tabs++
+							remTabAfterEOL = true
 						default:
 							panic("Unexpected token type")
 						}
