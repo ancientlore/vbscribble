@@ -52,6 +52,7 @@ func main() {
 					var prevT interface{}
 					needStarter := false
 					remTabAfterEOL := false
+					noTabs := false
 					if *respWrite {
 						fmt.Print("<%")
 					}
@@ -86,9 +87,10 @@ func main() {
 							if tabs < 0 {
 								tabs = 0
 							}
-							if prevK != vblexer.HTML {
+							if prevK != vblexer.HTML && !noTabs {
 								fmt.Print(strings.Repeat("\t", tabs))
 							}
+							noTabs = false
 							if remTabAfterEOL {
 								remTabAfterEOL = false
 								tabs--
@@ -235,6 +237,7 @@ func main() {
 								fmt.Print(aft)
 								fmt.Print(t)
 								fmt.Print(" ")
+								noTabs = true
 							} else {
 								fmt.Println()
 							}
