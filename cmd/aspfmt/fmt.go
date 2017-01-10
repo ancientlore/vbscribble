@@ -57,7 +57,9 @@ func main() {
 					}
 					for k, t, v := lex.Lex(); k != vblexer.EOF; k, t, v = lex.Lex() {
 						if needStarter {
-							fmt.Print("<%")
+							if k != vblexer.FILE_INCLUDE && k != vblexer.VIRTUAL_INCLUDE && k != vblexer.HTML {
+								fmt.Print("<%")
+							}
 							needStarter = false
 						}
 						if startLine {
@@ -180,7 +182,7 @@ func main() {
 									fmt.Printf("\"%s\"\n", strings.Replace(line, "\"", "\"\"", -1))
 								}
 							} else {
-								if prevK != vblexer.EOF {
+								if prevK != vblexer.EOF && prevK != vblexer.FILE_INCLUDE && prevK != vblexer.VIRTUAL_INCLUDE && prevK != vblexer.HTML {
 									fmt.Print(aft)
 									fmt.Print("%>")
 								}
@@ -189,7 +191,7 @@ func main() {
 							}
 							startLine = true
 						case vblexer.FILE_INCLUDE:
-							if prevK != vblexer.EOF {
+							if prevK != vblexer.HTML && prevK != vblexer.FILE_INCLUDE && prevK != vblexer.VIRTUAL_INCLUDE {
 								fmt.Print(aft)
 								fmt.Print("%>")
 							}
@@ -197,7 +199,7 @@ func main() {
 							needStarter = true
 							startLine = true
 						case vblexer.VIRTUAL_INCLUDE:
-							if prevK != vblexer.EOF {
+							if prevK != vblexer.HTML && prevK != vblexer.FILE_INCLUDE && prevK != vblexer.VIRTUAL_INCLUDE {
 								fmt.Print(aft)
 								fmt.Print("%>")
 							}
