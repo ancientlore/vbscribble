@@ -15,8 +15,10 @@ import (
 func main() {
 	var root string
 	var obj bool
+	var objNew bool
 	flag.StringVar(&root, "root", ".", "Root folder to search")
 	flag.BoolVar(&obj, "obj", false, "Show COM objects used in each file")
+	flag.BoolVar(&objNew, "new", false, "Show objects created with new in each file")
 	flag.Parse()
 
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -42,6 +44,7 @@ func main() {
 				}()
 				lex.Init(fil, f, vbscanner.HTML_MODE)
 				creatingObj := false
+				newingObj := false
 				for k, t, v := lex.Lex(); k != vblexer.EOF; k, t, v = lex.Lex() {
 					switch k {
 					case vblexer.STATEMENT:
@@ -50,6 +53,8 @@ func main() {
 							messages = append(messages, fmt.Sprintf("%d: Statement [Stop] should not be used in production code", lex.Line))
 						case "Execute", "Executeglobal":
 							messages = append(messages, fmt.Sprintf("%d: Statement [%s] is not recommended", lex.Line, t))
+						case "New":
+							newingObj = true
 						}
 					case vblexer.FUNCTION:
 						switch t {
@@ -64,13 +69,18 @@ func main() {
 							if creatingObj && obj {
 								messages = append(messages, fmt.Sprintf("%d: Using object [%s]", lex.Line, v))
 							}
+							if newingObj && objNew {
+								messages = append(messages, fmt.Sprintf("%d: New object [%s]", lex.Line, v))
+							}
 							creatingObj = false
+							newingObj = false
 						}
 					case vblexer.STRING:
 						if creatingObj && obj {
 							messages = append(messages, fmt.Sprintf("%d: Using object [%s]", lex.Line, v))
 						}
 						creatingObj = false
+						newingObj = false
 					}
 				}
 				if len(messages) > 0 {
