@@ -189,7 +189,7 @@ func main() {
 							}
 							startLine = true
 						case vblexer.CHAR:
-							if prevK == vblexer.STATEMENT {
+							if prevK == vblexer.STATEMENT || prevK == vblexer.OP {
 								fmt.Print(aft)
 							}
 							fmt.Print(t)
