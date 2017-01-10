@@ -110,7 +110,22 @@ func main() {
 						case vblexer.EOF:
 						case vblexer.STATEMENT:
 							fmt.Print(aft)
-							fmt.Print(t)
+							switch t {
+							case "Elseif":
+								fmt.Print("ElseIf")
+							case "Redim":
+								fmt.Print("ReDim")
+							case "Executeglobal":
+								fmt.Print("ExecuteGlobal")
+							case "Wend":
+								fmt.Print("WEnd")
+							case "Byref":
+								fmt.Print("ByRef")
+							case "Byval":
+								fmt.Print("ByVal")
+							default:
+								fmt.Print(t)
+							}
 							switch t {
 							case "If", "Function", "Sub", "Class", "Property", "For", "With", "While", "Case": // "Select"
 								if !(prevK == vblexer.STATEMENT && prevT == "Exit") {
