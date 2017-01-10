@@ -3,7 +3,10 @@
 option explicit
 dim set_var : set_var = trUE
 %>
-<!--#include file="../inc/some_include.asp"-->
+<!-- #include file = "../inc/some_include.asp" -->
+<!-- #include file = "../inc/some_other_include.asp" -->
+<!-- #include
+		virtual = "../inc/some_other_include.asp" -->
 <html>
 <%
 

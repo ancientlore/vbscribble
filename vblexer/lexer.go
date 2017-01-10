@@ -3,6 +3,7 @@ package vblexer
 
 import (
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -42,6 +43,8 @@ const (
 	EOL                                  // end of line
 	OP                                   // operator
 	CONTINUATION                         // continuation character (underscore)
+	FILE_INCLUDE                         // file include
+	VIRTUAL_INCLUDE                      // virtual include
 )
 
 // Lex uses a scanner to read and classify VBScript tokens
@@ -49,6 +52,7 @@ type Lex struct {
 	s        vbscanner.Scanner
 	Filename string
 	Line     int
+	q        []qitem
 }
 
 // Init prepares the lexer for use.
@@ -61,6 +65,12 @@ func (lex *Lex) Init(src io.Reader, fname string, initialMode vbscanner.Mode) {
 // Lex returns the next token in the steam and classifies it. The values returned are
 // the token type, the converted value, and the raw value as a string.
 func (lex *Lex) Lex() (TokenType, interface{}, string) {
+	// handle queue first
+	if len(lex.q) > 0 {
+		return lex.pop()
+	}
+
+	// scan next value
 	tok, value := lex.s.Scan()
 
 	// return tok.String(), value
@@ -162,8 +172,10 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 	case vbscanner.Comment:
 		return COMMENT, value, value
 	case vbscanner.Html:
-		lex.Line += strings.Count(value, "\n")
-		return HTML, value, value
+		//lex.Line += strings.Count(value, "\n")
+		//return HTML, value, value
+		lex.processHTML(value)
+		return lex.pop()
 	case vbscanner.Char:
 		if value == "_" {
 			return CONTINUATION, value, value
@@ -180,4 +192,56 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 
 	panic("How did we get here?")
 	// return "IDENT", value
+}
+
+// push puts an item on the queue to be returned in subsequent calls to Lex.
+// lineIncr is the number of lines to add.
+func (lex *Lex) push(t TokenType, cv interface{}, rv string, lineIncr int) {
+	lex.q = append(lex.q, qitem{
+		T:        t,
+		CV:       cv,
+		RV:       rv,
+		LineIncr: lineIncr,
+	})
+}
+
+// pop returns a stored value from the queue to be returned by Lex, and increments
+// the line number accordingly.
+func (lex *Lex) pop() (TokenType, interface{}, string) {
+	if len(lex.q) == 0 {
+		panic("empty queue")
+	}
+	itm := lex.q[0]
+	copy(lex.q, lex.q[1:])
+	lex.q = lex.q[0 : len(lex.q)-1]
+	lex.Line += itm.LineIncr
+	return itm.T, itm.CV, itm.RV
+}
+
+// qitem is the data stored on the queue
+type qitem struct {
+	T        TokenType   // Token type
+	CV       interface{} // Converted value
+	RV       string      // Raw value
+	LineIncr int         // Line increment
+}
+
+var re = regexp.MustCompile(`<!--\s*#include\s+(file|virtual)\s*=\s*"([ \w/.\\\-]+)"\s*-->`)
+
+// processHTML looks for embedded script includes and builds up the
+// queue as needed.
+func (lex *Lex) processHTML(html string) {
+	fragments := re.Split(html, -1)
+	submatches := re.FindAllStringSubmatch(html, -1)
+	for i, frag := range fragments {
+		lex.push(HTML, frag, frag, strings.Count(frag, "\n"))
+		if i < len(submatches) {
+			submatch := submatches[i]
+			if submatch[1] == "file" {
+				lex.push(FILE_INCLUDE, submatch[2], submatch[2], strings.Count(submatch[0], "\n"))
+			} else {
+				lex.push(VIRTUAL_INCLUDE, submatch[2], submatch[2], strings.Count(submatch[0], "\n"))
+			}
+		}
+	}
 }

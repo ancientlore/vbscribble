@@ -188,6 +188,22 @@ func main() {
 								needStarter = true
 							}
 							startLine = true
+						case vblexer.FILE_INCLUDE:
+							if prevK != vblexer.EOF {
+								fmt.Print(aft)
+								fmt.Print("%>")
+							}
+							fmt.Printf(`<!--#include file="%s"-->`, v)
+							needStarter = true
+							startLine = true
+						case vblexer.VIRTUAL_INCLUDE:
+							if prevK != vblexer.EOF {
+								fmt.Print(aft)
+								fmt.Print("%>")
+							}
+							fmt.Printf(`<!--#include virtual="%s"-->`, v)
+							needStarter = true
+							startLine = true
 						case vblexer.CHAR:
 							if prevK == vblexer.STATEMENT || prevK == vblexer.OP {
 								fmt.Print(aft)
