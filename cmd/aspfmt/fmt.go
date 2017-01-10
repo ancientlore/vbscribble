@@ -195,7 +195,15 @@ func main() {
 								fmt.Print(aft)
 								fmt.Print("%>")
 							}
+							if *respWrite {
+								fmt.Print(aft)
+								fmt.Print("%>")
+							}
 							fmt.Printf(`<!--#include file="%s"-->`, v)
+							if *respWrite {
+								fmt.Print("<%")
+								fmt.Print(aft)
+							}
 							needStarter = true
 							startLine = true
 						case vblexer.VIRTUAL_INCLUDE:
@@ -203,7 +211,15 @@ func main() {
 								fmt.Print(aft)
 								fmt.Print("%>")
 							}
+							if *respWrite {
+								fmt.Print(aft)
+								fmt.Print("%>")
+							}
 							fmt.Printf(`<!--#include virtual="%s"-->`, v)
+							if *respWrite {
+								fmt.Print("<%")
+								fmt.Print(aft)
+							}
 							needStarter = true
 							startLine = true
 						case vblexer.CHAR:
