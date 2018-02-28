@@ -106,9 +106,8 @@ func (s *Scanner) scanHtml() string {
 		if r == '<' && s.nextIs('%') {
 			s.mode = VBS_MODE
 			return s.buf.String()
-		} else {
-			s.buf.WriteRune(r)
 		}
+		s.buf.WriteRune(r)
 	}
 }
 
@@ -127,9 +126,8 @@ func (s *Scanner) scanCode() string {
 		if r == '%' && s.nextIs('>') {
 			s.mode = HTML_MODE
 			return s.buf.String()
-		} else {
-			s.buf.WriteRune(r)
 		}
+		s.buf.WriteRune(r)
 	}
 }
 
@@ -155,70 +153,68 @@ func (s *Scanner) Scan() (TokenType, string) {
 			if r == '%' && s.nextIs('>') {
 				s.mode = HTML_MODE
 				return Html, s.scanHtml()
-			} else {
-				if r == 'R' || r == 'r' {
-					b, err := s.rdr.Peek(3)
-					if err == nil {
-						str := strings.ToLower(string(b[0:2]))
-						if str == "em" && (b[2] == '\t' || b[2] == ' ') {
-							b := make([]byte, 3)
-							_, err = s.rdr.Read(b)
-							if err != nil {
-								panic(err)
-							}
-							return Comment, s.scanComment()
-						} else if str == "em" && b[2] != '_' && !unicode.IsLetter(rune(b[2])) && !unicode.IsDigit(rune(b[2])) {
-							b := make([]byte, 2)
-							_, err = s.rdr.Read(b)
-							if err != nil {
-								panic(err)
-							}
-							return Comment, s.scanComment()
+			}
+			if r == 'R' || r == 'r' {
+				b, err := s.rdr.Peek(3)
+				if err == nil {
+					str := strings.ToLower(string(b[0:2]))
+					if str == "em" && (b[2] == '\t' || b[2] == ' ') {
+						b := make([]byte, 3)
+						_, err = s.rdr.Read(b)
+						if err != nil {
+							panic(err)
 						}
+						return Comment, s.scanComment()
+					} else if str == "em" && b[2] != '_' && !unicode.IsLetter(rune(b[2])) && !unicode.IsDigit(rune(b[2])) {
+						b := make([]byte, 2)
+						_, err = s.rdr.Read(b)
+						if err != nil {
+							panic(err)
+						}
+						return Comment, s.scanComment()
 					}
-				}
-				if unicode.IsLetter(r) {
-					s := s.scanIdent(r)
-					switch strings.ToLower(s) {
-					case "mod", "and", "not", "or", "xor":
-						return Op, s
-					default:
-						return Ident, s
-					}
-				} else if unicode.IsNumber(r) {
-					return s.scanNumber(r)
-				} else if r == '&' && s.isHexOctNum() {
-					return s.scanNumber(r)
-				} else if unicode.IsSpace(r) {
-					if r == '\n' {
-						return EOL, "\n"
-					}
-				} else if r == ':' {
-					return EOL, ":"
-				} else if r == '"' {
-					return String, s.scanString()
-				} else if r == '\'' {
-					return Comment, s.scanComment()
-				} else if r == '#' {
-					return Date, s.scanDate()
-				} else if r == '^' || r == '*' || r == '/' || r == '+' || r == '-' || r == '&' || r == '=' {
-					return Op, string(r)
-				} else if r == '<' || r == '>' {
-					if r == '<' && s.nextIs('>') {
-						return Op, "<>"
-					} else if s.nextIs('=') {
-						return Op, string(r) + "="
-					} else {
-						return Op, string(r)
-					}
-				} else if r == '\\' && s.nextIs('\\') {
-					return Op, "\\\\"
-				} else {
-					return Char, string(r)
 				}
 			}
+			if unicode.IsLetter(r) {
+				s := s.scanIdent(r)
+				switch strings.ToLower(s) {
+				case "mod", "and", "not", "or", "xor":
+					return Op, s
+				default:
+					return Ident, s
+				}
+			} else if unicode.IsNumber(r) {
+				return s.scanNumber(r)
+			} else if r == '&' && s.isHexOctNum() {
+				return s.scanNumber(r)
+			} else if unicode.IsSpace(r) {
+				if r == '\n' {
+					return EOL, "\n"
+				}
+			} else if r == ':' {
+				return EOL, ":"
+			} else if r == '"' {
+				return String, s.scanString()
+			} else if r == '\'' {
+				return Comment, s.scanComment()
+			} else if r == '#' {
+				return Date, s.scanDate()
+			} else if r == '^' || r == '*' || r == '/' || r == '+' || r == '-' || r == '&' || r == '=' {
+				return Op, string(r)
+			} else if r == '<' || r == '>' {
+				if r == '<' && s.nextIs('>') {
+					return Op, "<>"
+				} else if s.nextIs('=') {
+					return Op, string(r) + "="
+				} else {
+					return Op, string(r)
+				}
+			} else if r == '\\' && s.nextIs('\\') {
+				return Op, "\\\\"
+			} else {
+				return Char, string(r)
+			}
 		}
-
 	}
 }
 
@@ -326,7 +322,7 @@ func (s *Scanner) scanDate() string {
 func (s *Scanner) scanNumber(c rune) (TokenType, string) {
 	s.buf.Reset()
 	s.buf.WriteRune(c)
-	var t TokenType = Integer
+	var t = Integer
 	first := true
 	hex := false
 	oct := false
