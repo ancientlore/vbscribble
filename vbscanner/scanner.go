@@ -209,8 +209,8 @@ func (s *Scanner) Scan() (TokenType, string) {
 				} else {
 					return Op, string(r)
 				}
-			} else if r == '\\' && s.nextIs('\\') {
-				return Op, "\\\\"
+			} else if r == '\\' && !s.nextIs('\\') {
+				return Op, string(r)
 			} else {
 				return Char, string(r)
 			}

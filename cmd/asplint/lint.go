@@ -81,6 +81,10 @@ func main() {
 						}
 						creatingObj = false
 						newingObj = false
+					case vblexer.CHAR:
+						if !strings.ContainsAny(v, "[](),.@!") {
+							messages = append(messages, fmt.Sprintf("%d: Unrecognized charater [%s]", lex.Line, v))
+						}
 					}
 				}
 				if len(messages) > 0 {
