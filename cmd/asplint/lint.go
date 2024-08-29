@@ -82,7 +82,8 @@ func main() {
 						creatingObj = false
 						newingObj = false
 					case vblexer.CHAR:
-						if !strings.ContainsAny(v, "(),.@!") {
+						// ! and @ appear as part of asp sections and html comments
+						if !strings.ContainsAny(v, "@!") {
 							messages = append(messages, fmt.Sprintf("%d: Unrecognized character [%s]", lex.Line, v))
 						}
 					}

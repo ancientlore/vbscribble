@@ -39,12 +39,16 @@ const (
 	DATE                                 // date literals
 	COMMENT                              // comments
 	HTML                                 // HTML fragments in the ASP
-	CHAR                                 // random characters like parens
+	CHAR                                 // random characters
 	EOL                                  // end of line
 	OP                                   // operator
 	CONTINUATION                         // continuation character (underscore)
 	FILE_INCLUDE                         // file include
 	VIRTUAL_INCLUDE                      // virtual include
+	LIST_SEP                             // list separator (comma)
+	PAREN_OPEN                           // function invoke, array index, grouping (parens)
+	PAREN_CLOSE                          // function invoke, array index, grouping (parens)
+	FIELD_SEP                            // field separator (dot) - usually part of identifier except after parens
 )
 
 // Lex uses a scanner to read and classify VBScript tokens
@@ -177,8 +181,17 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 		lex.processHTML(value)
 		return lex.pop()
 	case vbscanner.Char:
-		if value == "_" {
+		switch value {
+		case "_":
 			return CONTINUATION, value, value
+		case ",":
+			return LIST_SEP, value, value
+		case "(":
+			return PAREN_OPEN, value, value
+		case ")":
+			return PAREN_CLOSE, value, value
+		case ".":
+			return FIELD_SEP, value, value
 		}
 		return CHAR, value, value
 	case vbscanner.EOL:
