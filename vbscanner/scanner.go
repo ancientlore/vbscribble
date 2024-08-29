@@ -183,6 +183,8 @@ func (s *Scanner) Scan() (TokenType, string) {
 				default:
 					return Ident, s
 				}
+			} else if r == '[' {
+				return Ident, s.scanBracketIdent()
 			} else if unicode.IsNumber(r) {
 				return s.scanNumber(r)
 			} else if r == '&' && s.isHexOctNum() {
@@ -252,6 +254,37 @@ func (s *Scanner) scanIdent(c rune) string {
 				panic(err)
 			}
 			return s.buf.String()
+		}
+	}
+}
+
+// scanBracketIdent returns an identifier that was enclosed in brackets.
+func (s *Scanner) scanBracketIdent() string {
+	s.buf.Reset()
+	for {
+		r, _, err := s.rdr.ReadRune()
+		if err == io.EOF {
+			s.eof = true
+			return "[" + s.buf.String() + "]"
+		} else if err != nil {
+			panic(err)
+		}
+
+		if r != ']' {
+			if r == '\r' || r == '\n' {
+				panic("unterminated identifier literal")
+			}
+			s.buf.WriteRune(r)
+		} else {
+			if s.nextIs(']') {
+				s.buf.WriteRune(r)
+			} else {
+				str := s.buf.String()
+				if strings.Contains(str, "%>") {
+					panic("Identifier contains %>")
+				}
+				return "[" + str + "]"
+			}
 		}
 	}
 }

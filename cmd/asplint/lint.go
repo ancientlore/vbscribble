@@ -82,8 +82,8 @@ func main() {
 						creatingObj = false
 						newingObj = false
 					case vblexer.CHAR:
-						if !strings.ContainsAny(v, "[](),.@!") {
-							messages = append(messages, fmt.Sprintf("%d: Unrecognized charater [%s]", lex.Line, v))
+						if !strings.ContainsAny(v, "(),.@!") {
+							messages = append(messages, fmt.Sprintf("%d: Unrecognized character [%s]", lex.Line, v))
 						}
 					}
 				}
