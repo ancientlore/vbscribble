@@ -2,6 +2,7 @@
 package vblexer
 
 import (
+	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -158,21 +159,31 @@ func (lex *Lex) Lex() (TokenType, interface{}, string) {
 			"2006-01-02 15:04:05",   // #1999-12-31 21:26:00#
 			"01/02/2006 3:04:05 PM", // #12/31/1999 9:26:00 PM#
 			"01/02/2006 3:04:05 pm", // #12/31/1999 9:26:00 pm#
+			"1/2/2006 3:04:05 PM",   // #12/31/1999 9:26:00 PM#
+			"1/2/2006 3:04:05 pm",   // #12/31/1999 9:26:00 pm#
 			"02-Jan-2006",           // #31-Dec-1999#
 			"02-JAN-2006",           // #31-DEC-1999#
 			"2006-01-02",            // #1999-12-31#
 			"01/02/2006",            // #12/31/1999#
+			"1/2/2006",              // #12/31/1999#
 			"01-02-2006",            // #12-31-1999#
+			"1-2-2006",              // #12-31-1999#
 			"15:04:05",              // #21:26:00#
+			"03:04:05 PM",           // #21:26:00#
+			"3:04:05 PM",            // #21:26:00#
 		}
-		loc, _ := time.LoadLocation("America/New_York")
+		loc, err := time.LoadLocation("America/New_York")
+		if err != nil {
+			loc = time.Local
+		}
 		for _, fmt := range formats {
 			t, err := time.ParseInLocation(fmt, value, loc)
 			if err == nil {
 				return DATE, t, value
 			}
 		}
-		return DATE, value, value
+		panic(fmt.Errorf("invalid date literal %q", value))
+		// return DATE, value, value
 	case vbscanner.Comment:
 		return COMMENT, value, value
 	case vbscanner.Html:
